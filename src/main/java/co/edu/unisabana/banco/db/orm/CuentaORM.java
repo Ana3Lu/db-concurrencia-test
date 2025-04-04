@@ -17,4 +17,7 @@ public class CuentaORM {
     private Long id;
 
     private float monto;
+
+    @Version // Control de concurrencia
+    private Integer version;
 }
