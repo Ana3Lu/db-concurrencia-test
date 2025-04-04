@@ -5,11 +5,13 @@ import co.edu.unisabana.banco.db.jpa.TransaccionJPA;
 import co.edu.unisabana.banco.db.orm.CuentaORM;
 import co.edu.unisabana.banco.db.orm.TransaccionORM;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
+@AllArgsConstructor
 public class TransaccionService {
 
     private CuentaJPA cuentaJPA;

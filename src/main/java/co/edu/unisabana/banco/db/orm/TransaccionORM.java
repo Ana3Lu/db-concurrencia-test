@@ -22,7 +22,7 @@ public class TransaccionORM {
     private CuentaORM origen;
 
     @ManyToOne
-    @JoinColumn(name = "destinoId", nullable = false)
+    @JoinColumn(name = "destino_id", nullable = false)
     private CuentaORM destino;
 
     private float monto;
