@@ -106,11 +106,9 @@ Con base en las comparaciones anteriormente expuestas, se puede concluir que aum
 
 ## 4. Conclusión
 
-Gracias a esta práctica se pudo observar cómo el número de conexiones disponibles entre una aplicación y su base de datos influye directamente en la eficiencia del sistema. Al aumentar el tamaño del pool de conexiones, el sistema puede responder más rápido a múltiples usuarios que hacen operaciones al mismo tiempo. Sin embargo, también se comprobó que hacer este aumento de forma exagerada no siempre mejora el desempeño, y en algunos casos puede llevar a desperdiciar recursos.
+Con todo lo anteriormente expuesto, podemos concluir que se pudo observar cómo el número de conexiones disponibles entre una aplicación y su base de datos influye directamente en la eficiencia del sistema. Al aumentar el tamaño del pool de conexiones, el sistema puede responder más rápido a múltiples usuarios que hacen operaciones al mismo tiempo. Sin embargo, también se comprobó que hacer este aumento de forma exagerada no siempre mejora el desempeño, y en algunos casos puede llevar a desperdiciar recursos.
 
-Además, el uso de estrategias para manejar conflictos cuando varias operaciones intentan modificar los mismos datos permitió que las transacciones fueran confiables y no se presentaran errores por concurrencia. El monitoreo con herramientas como New Relic fue clave para visualizar los tiempos de respuesta y entender cómo se comportaba el sistema bajo diferentes configuraciones.
-
-En resumen, esta práctica permitió aplicar conceptos importantes sobre concurrencia, rendimiento y monitoreo de aplicaciones en un escenario realista, fortaleciendo las habilidades necesarias para diseñar sistemas eficientes y escalables.
+Además de esto, el uso de estrategias para manejar conflictos cuando varias operaciones intentan modificar los mismos datos permitió que las transacciones fueran confiables y no se presentaran errores por concurrencia. El monitoreo con New Relic fue bastante importante para visualizar los tiempos de respuesta y entender cómo se comportaba el sistema utilizando diferentes configuraciones.
 
 
 ---
