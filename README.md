@@ -152,19 +152,15 @@ Este proyecto permitió entender y observar cómo el número de conexiones dispo
 </p>
 
 <p align="justify">
-También se implementaron estrategias para manejar posibles conflictos cuando varias operaciones intentaban modificar los mismos datos, lo cual evitó errores y garantizó que cada transacción fuera segura. Estas decisiones ayudaron a construir una solución confiable para ambientes concurrentes, gracias a la lógica implementada en el servicio con anotaciones como <code>@Transactional</code>, <code>@Retryable</code>, y el uso de un campo adicional que permitió controlar la concurrencia sin necesidad de sincronización explícita.
+Para garantizar la integridad de las transacciones durante cargas concurrentes, se implementaron estrategias como el uso de anotaciones <code>@Transactional</code> y <code>@Retryable</code>, además de una lógica personalizada con un campo adicional que permitió evitar conflictos sin recurrir a sincronización explícita. Estas decisiones contribuyeron a una solución robusta, capaz de operar de manera segura en entornos altamente concurrentes.
 </p>
 
 <p align="justify">
-Además, el uso de herramientas de monitoreo y pruebas permitió identificar de manera visual y precisa cómo responde el sistema ante diferentes niveles de carga, gracias a las gráficas generadas desde New Relic. Estas comparaciones mostraron claramente cómo el impacto del tiempo de procesamiento se distribuye entre la aplicación Java y la base de datos MySQL.
+El uso combinado de herramientas como JMeter y New Relic facilitó una evaluación visual y precisa del comportamiento del sistema frente a distintas configuraciones del pool de conexiones. Las gráficas permitieron observar cómo se distribuía el tiempo de procesamiento entre Java y MySQL, evidenciando que el desempeño mejora hasta un punto intermedio, más allá del cual los beneficios son marginales y puede haber uso innecesario de recursos.
 </p>
 
 <p align="justify">
-Entre todas las configuraciones evaluadas, la que presentó un mejor equilibrio fue la que usó un maximumPoolSize de 50 y un minimumIdle de 20. En ese punto, el tiempo de respuesta se estabilizó, con una carga balanceada entre Java y MySQL, y sin evidencia de sobrecarga o desperdicio de recursos significativos. Aunque se trató de una configuración más agresiva de lo habitual, demostró ser la más efectiva para el tipo de carga concurrente que se evaluó.
-</p>
-
-<p align="justify">
-En conjunto, estos resultados validan que una buena configuración del pool, acompañada de una lógica robusta de concurrencia, permite construir sistemas más eficientes, consistentes y escalables.
+En ese sentido, la configuración con <code>maximumPoolSize</code> de 50 y <code>minimumIdle</code> de 20 se destacó como la más equilibrada: ofreció los mejores tiempos de respuesta sin sobrecargar el entorno, logrando una distribución armónica de carga entre aplicación y base de datos. En conjunto, estos hallazgos validan que una adecuada configuración del pool, sumada a una lógica de concurrencia bien diseñada, permite construir sistemas más eficientes, consistentes y escalables.
 </p>
 
 ---
