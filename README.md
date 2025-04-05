@@ -13,58 +13,85 @@
 | Ana Lucía Quintero Vargas | anaquiva@unisabana.edu.co |
 
 ## Estructura de la Documentación
-- [1. Introducción](#1-introducción)
-- [2. Metodología](#2-metodología)
-- [3. Análisis y Resultados](#3-análisis-y-resultados)
-- [4. Conclusión](#4-conclusión)
-- [5. Referencias](#5-referencias)
+- [1. Abstract](#1-abstract)
+- [2. Introducción](#2-introducción)
+- [3. Metodología](#3-metodología)
+- [4. Análisis y Resultados](#4-análisis-y-resultados)
+- [5. Conclusión](#5-conclusión)
+- [6. Referencias](#6-referencias)
 
 ---
 
-## 1. Introducción
+## 1. Abstract
 
-El propósito principal de este proyecto fue analizar cómo se comporta una aplicación cuando muchos usuarios realizan operaciones al mismo tiempo. Para ello, se diseñó una simulación bancaria donde dos cuentas pueden enviarse dinero entre sí. Lo interesante del ejercicio fue que, aunque la lógica era sencilla, se realizó un énfasis en entender cómo el sistema respondía bajo presión, especialmente al cambiar la cantidad de conexiones activas entre la aplicación y la base de datos.
+This project analyzes the behavior of a Spring Boot REST API under concurrent load, focusing on how different HikariCP connection pool configurations affect performance. A basic banking simulation was developed where two accounts repeatedly transfer money to each other. To ensure data consistency during simultaneous access, optimistic locking with the @Version annotation and automatic retries using @Retryable were implemented. Load testing with Apache JMeter and performance monitoring with New Relic enabled real-time observation of system behavior under 30 concurrent threads. Four connection pool setups were tested, and results showed that increasing the pool size improves response times and reduces conflicts up to a certain threshold. In this case, the 50-20 configuration achieved the best balance between speed and resource usage, making it the most efficient despite exceeding the number of concurrent users.
 
-Se utilizó Java con Spring Boot para desarrollar la aplicación, y una base de datos en la nube para guardar la información [1]. Además, se incluyeron mecanismos como el control de concurrencia optimista y los reintentos automáticos para manejar situaciones en las que dos transacciones intentan modificar los mismos datos simultáneamente, lo cual es posible gracias a funcionalidades del framework JPA y la anotación @Retryable [1].
-
-El desempeño del sistema se midió usando dos herramientas: Apache JMeter, que simula múltiples usuarios enviando transacciones al mismo tiempo, y New Relic, que permite monitorear en tiempo real qué tanto tarda cada parte del sistema en responder [2]. Con esto se probaron diferentes configuraciones del número de conexiones posibles, desde muy pocas hasta muchas, para identificar cuál es la más eficiente en un escenario de alta concurrencia.
+**Keywords:** Spring Boot, HikariCP, concurrency, optimistic locking, load testing, REST API, JPA, JMeter, New Relic.
 
 ---
 
-## 2. Metodología
+## 2. Introducción
+
+El propósito principal de este proyecto fue analizar cómo se comporta una aplicación cuando muchos usuarios realizan operaciones simultáneamente. Para ello, se diseñó una simulación bancaria donde dos cuentas pueden enviarse dinero entre sí. Aunque la lógica del sistema era sencilla, el énfasis estuvo en observar cómo respondía bajo presión, especialmente al modificar la cantidad de conexiones activas entre la aplicación y la base de datos.
+
+Se utilizó Java con Spring Boot para desarrollar la aplicación, y una base de datos en la nube para almacenar la información [1]. Además, se implementaron mecanismos como el control de concurrencia optimista y los reintentos automáticos, permitiendo manejar situaciones donde varias transacciones intentan modificar los mismos datos al mismo tiempo, gracias a funcionalidades del framework JPA y la anotación @Retryable [1].
+
+El desempeño del sistema se midió usando dos herramientas: Apache JMeter, que simula múltiples usuarios ejecutando transacciones de forma concurrente, y New Relic, que permite monitorear en tiempo real el tiempo de respuesta de cada parte del sistema [2]. Con esto, se probaron distintas configuraciones del número de conexiones disponibles, desde muy pocas hasta muchas, para identificar cuál ofrecía el mejor rendimiento en un entorno de alta concurrencia.
+
+---
+
+## 3. Metodología
 
 <p align="justify">
 Con el fin de evaluar el comportamiento concurrente de una API REST desarrollada en Spring Boot, se diseñó una práctica centrada en probar cómo distintas configuraciones del pool de conexiones HikariCP afectaban la interacción entre el backend Java y una base de datos remota alojada en Railway. El enfoque principal fue observar, mediante pruebas de carga, cómo se distribuían los tiempos de respuesta entre la lógica de la aplicación y el acceso a la base de datos, bajo diferentes escenarios de concurrencia.
+</p>
 
-Para ello, se generó un proyecto base utilizando Spring Initializr, en el cual se implementaron las entidades necesarias (cuentas y transacciones), junto con sus respectivos DTOs, repositorios JPA, entidades ORM y controladores REST. Por un lado, la tabla de cuentas contenía columnas para id (autogenerada), monto y un campo adicional service añadido para gestionar correctamente accesos simultáneos. Para resolver posibles conflictos al modificar datos compartidos entre múltiples hilos, se implementó control de concurrencia optimista mediante el uso de una anotación @Version, que permite a JPA detectar si otra transacción ha modificado el mismo registro en paralelo y, en caso de conflicto, lanzar una excepción.
+<p align="justify">
+Para ello, se generó un proyecto base utilizando Spring Initializr, en el cual se implementaron las entidades necesarias (cuentas y transacciones), junto con sus respectivos DTOs, repositorios JPA, entidades ORM y controladores REST. Por un lado, la tabla de cuentas incluyó columnas para id (autogenerada), monto y un campo adicional service añadido para gestionar correctamente accesos simultáneos. Para resolver posibles conflictos al modificar datos compartidos entre múltiples hilos, se implementó control de concurrencia optimista mediante el uso de una anotación @Version, que permite a JPA detectar si otra transacción ha modificado el mismo registro en paralelo y, en caso de conflicto, lanzar una excepción. 
+</p>
 
-Dicho manejo se complementó con la anotación @Retryable, la cual se configuró para que, en caso de que se lanzara una OptimisticLockException, el intento de operación se reintentara hasta tres veces, con una espera de 100 ms entre cada intento. Este mecanismo se aplicó específicamente sobre el método responsable de mover dinero entre cuentas, el cual se mantuvo anotado con @Transactional para asegurar la atomicidad de cada operación. Esta estrategia busca evitar soluciones más forzadas o restrictivas como el uso de synchronized, ofreciendo un control más flexible y desacoplado del entorno multihilo.
+<p align="justify">
+Dicho manejo se complementó con la anotación @Retryable, configurado para reintentar hasta tres veces con pausas de 100 ms. Además, se usó @Transactional para asegurar la atomicidad del proceso de transferencia de fondos, evitando enfoques más restrictivos como synchronized.
+</p>
 
-Por otro lado, la tabla de transacciones incluía los campos id, origen_id, destino_id, monto y timestamp, representando cada operación entre dos cuentas. La estructura de la base de datos fue generada automáticamente gracias a la configuración ddl-auto: update de Spring Data JPA, lo cual permitió crear y actualizar las tablas sin necesidad de scripts SQL manuales.
+<p align="justify">
+Por otro lado, la tabla de transacciones incluía los campos id, origen_id, destino_id, monto y timestamp, representando cada operación entre dos cuentas. La base de datos fue generada automáticamente gracias a la propiedad ddl-auto: update, eliminando la necesidad de scripts SQL manuales.
+</p>
 
-En cuanto a la funcionalidad expuesta por la API, se creó un endpoint que permitía inicializar dos cuentas con un monto de 10,000 pesos cada una, y otro que permitía listar todas las cuentas existentes. Estas operaciones fueron clave para monitorear los cambios de saldo durante las pruebas de concurrencia.
+<p align="justify">
+En cuanto a la funcionalidad expuesta por la API, se creó un endpoint para inicializar dos cuentas con 10,000 pesos, y otro para listar todas las cuentas existentes. Estas operaciones fueron clave para observar los efectos de la concurrencia en tiempo real.
+</p>
 
-Para realizar el monitoreo en tiempo real del rendimiento, se integró la aplicación con la plataforma New Relic. Se completaron los pasos de instalación de logs, agente de infraestructura y agente Java, configurando el archivo de New Relic para que identificara la aplicación, el cual tenía el nombre de “banco”. Posteriormente, la aplicación se ejecutó localmente a través de un comando que incorporaba el agente, permitiendo que los datos de desempeño se enviaran directamente a la plataforma de monitoreo:
+<p align="justify">
+Para el monitoreo, se integró New Relic, instalando los agentes requeridos y configurando el archivo de conexión. La aplicación se ejecutó localmente con el agente activado, lo que permitió recolectar métricas de desempeño durante las pruebas de carga:
 </p>
 
 ```
 & "C:\Program Files\Java\jdk-17\bin\java.exe" -javaagent:"C:\Users\analu\Downloads\banco\banco\newrelic\newrelic.jar" -jar "build\libs\banco-0.0.1-SNAPSHOT.jar"
 ```
 <p align="justify">
-Las pruebas de carga se ejecutaron utilizando Apache JMeter con 30 hilos concurrentes. Inicialmente se estableció un número finito de repeticiones, pero al no alcanzar los resultados esperados, se optó por usar un bucle infinito en los hilos. A partir de ahí, se monitoreó manualmente la evolución de los saldos, verificando que las transacciones se ejecutaran correctamente hasta que una cuenta llegara a cero y la otra a 20,000 pesos.
+Las pruebas realizaron con Apache JMeter utilizando 30 hilos concurrentes. Inicialmente se estableció un número finito de repeticiones, pero al no alcanzar los resultados esperados, se optó por usar un bucle infinito en los hilos. A partir de ahí, se monitoreó manualmente la evolución de los saldos, verificando que las transacciones se ejecutaran correctamente hasta que una cuenta llegara a cero y la otra a 20,000 pesos.
+</p>
 
-Para el análisis de rendimiento, se probaron cuatro configuraciones distintas del pool de conexiones HikariCP: básica, intermedia, agresiva y muy agresiva. Todas compartían los mismos valores de idleTimeout (30,000 ms), maxLifetime (1,800,000 ms) y connectionTimeout (30,000 ms), parámetros que se mantuvieron constantes para que las diferencias observadas se debieran únicamente a la variación en el tamaño del pool. En este sentido, idleTimeout definía cuánto tiempo puede permanecer inactiva una conexión antes de cerrarse, mientras que maxLifetime establecía el tiempo máximo que puede vivir una conexión antes de ser reemplazada, evitando problemas con conexiones viejas o poco confiables. Por su parte, connectionTimeout marcaba cuánto tiempo máximo puede esperar una solicitud por una conexión libre.
+<p align="justify">
+Para el análisis de rendimiento, se evaluaron cuatro configuraciones del pool de conexiones: básica, intermedia, agresiva y muy agresiva. Todas compartían los mismos valores de idleTimeout (30,000 ms), maxLifetime (1,800,000 ms) y connectionTimeout (30,000 ms), parámetros que se mantuvieron constantes para que las diferencias observadas se debieran únicamente a la variación en el tamaño del pool.
+</p>
 
+<p align="justify">
 En cuanto a los parámetros variables, maximum-pool-size y minimum-idle, se definieron en cuatro niveles: 5-2 (básica), 20-5 (intermedia), 50-20 (agresiva) y 80-40 (muy agresiva). Estos valores fueron seleccionados estratégicamente para representar distintos grados de disponibilidad de conexiones ante la carga concurrente generada por los 30 hilos activos de JMeter. La configuración básica, con un máximo de 5 conexiones y solo 2 en estado inactivo, fue pensada para simular un sistema con recursos limitados, en el que se espera cierto grado de contención. La configuración intermedia amplió estos valores a 20-5, buscando un equilibrio más razonable entre disponibilidad y consumo de recursos. En la configuración agresiva (50-20), se permitió un margen mucho mayor para atender múltiples solicitudes concurrentes sin generar tiempos de espera elevados, ideal para analizar el desempeño en un escenario más exigente. Finalmente, la configuración muy agresiva (80-40) se planteó como un límite superior, incluso mayor al número de usuarios concurrentes, con el fin de verificar si un aumento significativo en las conexiones disponibles se traducía realmente en mejoras perceptibles en los tiempos de respuesta o si, por el contrario, implicaba un uso innecesario de recursos.
 </p>
 
 ---
 
-## 3. Análisis y Resultados
+## 4. Análisis y Resultados
 
+<p align="justify">
 A continuación, en las gráficas de las Figuras 1, 2, 3 y 4 se observan el comportamiento de los tiempos de respuesta durante una carga concurrente generada por JMeter, donde cada hilo ejecuta múltiples transacciones POST hacia el backend. En este caso, se configuró para que en todas las configuraciones desde el JMeter se tengan 30 usuarios (hilos) con un período de arranque (Ramp-up period) de 1 segundo para realizar de manera adecuada los test de concurrencia.
+</p>
 
+<p align="justify">
 En cada gráfica se puede observar que las áreas coloreadas representan el tiempo consumido por la aplicación Java (azul) y por la base de datos MySQL (verde), permitiendo analizar la distribución del tiempo de procesamiento y el impacto de cada configuración.
+</p>
 
 ###  Pool con Configuración Básica
 
@@ -72,15 +99,19 @@ En cada gráfica se puede observar que las áreas coloreadas representan el tiem
 
 *Figura 1. Visualización del tiempo de transacción web obtenida desde New Relic con una configuración básica de HikariCP, con un maximumPoolSize de 5 y un minimumIdle de 2.*
 
+<p align="justify">
 En esta gráfica se ve que la mayoría del tiempo lo consume la aplicación en Java. Esto indica que hay muchas operaciones esperando una conexión disponible, lo que genera un cuello de botella en el backend. El sistema no es capaz de atender bien a los 30 usuarios simultáneos.
+</p>
+
 ### Pool con Configuración Intermedia
 
 ![Diagrama Tiempo de Transacción Web con un Pool de Tamaño Máximo 20](Diagramas/20maxPool.png)
 
 *Figura 2. Visualización del tiempo de transacción web obtenida desde New Relic con una configuración intermedia de HikariCP, con un maximumPoolSize de 20 y un minimumIdle de 5.*
 
+<p align="justify">
 En esta prueba se evidencia una mejora significativa en los tiempos del backend. Aunque la base de datos comenzó a asumir una proporción mayor del tiempo de respuesta, Java continuó siendo el componente más exigido, aunque en menor medida que en la configuración básica.
-
+</p>
 
 ### Pool con Configuración Agresiva
 
@@ -88,8 +119,9 @@ En esta prueba se evidencia una mejora significativa en los tiempos del backend.
 
 *Figura 3. Visualización del tiempo de transacción web obtenida desde New Relic con una configuración agresiva de HikariCP, estableciendo un maximumPoolSize de 50 y un minimumIdle de 20.*
 
+<p align="justify">
 En este caso se observó una reducción considerable en los tiempos del backend, y un incremento progresivo en el peso relativo de la base de datos en el tiempo total de transacción. Si bien la carga se distribuyó mejor, Java seguía teniendo un rol predominante, lo cual motivó la necesidad de evaluar una configuración aún más exigente.
-
+</p>
 
 ### Pool con Configuración Muy Agresiva
 
@@ -97,25 +129,45 @@ En este caso se observó una reducción considerable en los tiempos del backend,
 
 *Figura 4. Visualización del tiempo de transacción web obtenida desde New Relic bajo una configuración muy agresiva de HikariCP, con un maximumPoolSize de 80 y un minimumIdle de 40.*
 
+<p align="justify">
 En este caso, la aplicación tiene suficientes conexiones para atender a todos los usuarios sin demoras. Sin embargo, se observa que el tiempo de respuesta total ya no mejora mucho con respecto a la configuración anterior. Incluso, puede notarse que se empieza a desperdiciar recursos, porque se asignan más conexiones de las necesarias. A diferencia de las pruebas anteriores, se buscó identificar un punto donde MySQL empezara a tener un rol más dominante, reduciendo la presión sobre Java.
+</p>
 
+<p align="justify">
+Con base en las comparaciones anteriormente expuestas, se puede concluir que aumentar el número de conexiones disponibles mejora el desempeño hasta cierto punto. Sin embargo, después de un nivel intermedio, los beneficios adicionales son mínimos y pueden generar un consumo innecesario de recursos. Por eso, encontrar una configuración equilibrada (como la intermedia o agresiva) resulta lo más recomendable para un sistema de este tipo, que busca eficiencia sin sobrecargar el entorno. Curiosamente, en este caso particular fue la configuración agresiva la que mostró mejores tiempos de respuesta, lo cual podría deberse a que la base de datos estaba alojada en Railway, una plataforma que puede llegar a manejar de forma eficiente múltiples conexiones activas y permite un mayor nivel de concurrencia sin degradar el servicio.
+</p> 
 
-Con base en las comparaciones anteriormente expuestas, se puede concluir que aumentar el número de conexiones disponibles mejora el desempeño hasta cierto punto. Sin embargo, después de un nivel intermedio, los beneficios adicionales son mínimos y pueden generar un consumo innecesario de recursos. Por eso, encontrar una configuración equilibrada (como la intermedia o agresiva) es lo más recomendable para un sistema como este.
-
----
-
-## 4. Conclusión
-
-Este proyecto permitió entender y observar cómo el número de conexiones disponibles entre una aplicación y su base de datos influye directamente en el rendimiento general del sistema de la misma aplicación. Se comprobó que cuando hay pocas conexiones, el sistema se vuelve lento y no puede atender correctamente a muchos usuarios. Por lo que al aumentar ese número se mejoran los tiempos de respuesta y se reducen los bloqueos, aunque solo hasta cierto punto.
-
-También se implementaron estrategias para manejar posibles conflictos cuando varias operaciones intentaban modificar los mismos datos, lo cual evitó errores y garantizó que cada transacción fuera segura. Estas decisiones ayudaron a construir una solución confiable para ambientes concurrentes.
-
-Finalmente, el uso de herramientas de monitoreo y pruebas permitió identificar de manera visual y precisa cómo responde el sistema ante diferentes niveles de carga, donde se realizan ciertas comparaciones en cuanto a las gráficas de los tiempos de los tamaños de los Pool, lo que ayuda a ver de una mejor manera el comportamiento de la aplicación cuando existen diferentes niveles de concurrencia.
-
+<p align="justify">
+Además, se pudo verificar que la estrategia de control de concurrencia mediante el campo adicional <code>service</code> dentro de la entidad <code>Cuenta</code>, combinada con el uso de anotaciones como <code>@Transactional</code> y <code>@Retryable</code>, logró mantener la consistencia de las transacciones. Esto se reflejó en que, durante los test de carga, solo una fracción de las solicitudes simultáneas lograba ejecutar la transacción exitosamente, mientras que las demás eran rechazadas con errores como <code>OptimisticLockException</code> u <code>ObjectOptimisticLockingFailureException</code>. Esto validó que la lógica de control concurrente era efectiva al evitar condiciones de carrera, sin necesidad de aplicar soluciones menos escalables como <code>synchronized</code>.
+</p>
 
 ---
 
-## 5. Referencias
+## 5. Conclusión
+
+<p align="justify">
+Este proyecto permitió entender y observar cómo el número de conexiones disponibles entre una aplicación y su base de datos influye directamente en el rendimiento general del sistema. Se comprobó que, cuando hay pocas conexiones, el sistema se vuelve lento y no puede atender correctamente a muchos usuarios. Al aumentar ese número se mejoran los tiempos de respuesta y se reducen los bloqueos, aunque solo hasta cierto punto.
+</p>
+
+<p align="justify">
+También se implementaron estrategias para manejar posibles conflictos cuando varias operaciones intentaban modificar los mismos datos, lo cual evitó errores y garantizó que cada transacción fuera segura. Estas decisiones ayudaron a construir una solución confiable para ambientes concurrentes, gracias a la lógica implementada en el servicio con anotaciones como @Transactional, @Retryable, y el uso de un campo adicional que permitió controlar la concurrencia sin necesidad de sincronización explícita.
+</p>
+
+<p align="justify">
+Además, el uso de herramientas de monitoreo y pruebas permitió identificar de manera visual y precisa cómo responde el sistema ante diferentes niveles de carga, gracias a las gráficas generadas desde New Relic. Estas comparaciones mostraron claramente cómo el impacto del tiempo de procesamiento se distribuye entre la aplicación Java y la base de datos MySQL.
+</p>
+
+<p align="justify">
+Entre todas las configuraciones evaluadas, la que presentó un mejor equilibrio fue la que usó un maximumPoolSize de 50 y un minimumIdle de 20. En ese punto, el tiempo de respuesta se estabilizó, con una carga balanceada entre Java y MySQL, y sin evidencia de sobrecarga o desperdicio de recursos significativos. Aunque se trató de una configuración más agresiva de lo habitual, demostró ser la más efectiva para el tipo de carga concurrente que se evaluó.
+</p>
+
+<p align="justify">
+En conjunto, estos resultados validan que una buena configuración del pool, acompañada de una lógica robusta de concurrencia, permite construir sistemas más eficientes, consistentes y escalables.
+</p>
+
+---
+
+## 6. Referencias
 
 [1] Spring, “Spring Framework Documentation.” [Online]. Available: https://docs.spring.io/spring-framework/
 
