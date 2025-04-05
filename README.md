@@ -101,6 +101,7 @@ En este caso, la aplicación tiene suficientes conexiones para atender a todos l
 
 
 Con base en las comparaciones anteriormente expuestas, se puede concluir que aumentar el número de conexiones disponibles mejora el desempeño hasta cierto punto. Sin embargo, después de un nivel intermedio, los beneficios adicionales son mínimos y pueden generar un consumo innecesario de recursos. Por eso, encontrar una configuración equilibrada (como la intermedia o agresiva) es lo más recomendable para un sistema como este.
+
 ---
 
 ## 4. Conclusión
