@@ -59,7 +59,7 @@ Por otro lado, la tabla de transacciones incluía los campos id, origen_id, dest
 </p>
 
 <p align="justify">
-En cuanto a la funcionalidad expuesta por la API, se creó un endpoint para inicializar dos cuentas con 10,000 pesos, y otro para listar todas las cuentas existentes. Estas operaciones fueron clave para observar los efectos de la concurrencia en tiempo real.
+En cuanto a la funcionalidad expuesta por la API, se creó un endpoint para inicializar dos cuentas con un saldo predeterminado de 10,000 pesos, y otro para listar todas las cuentas existentes. Estas operaciones fueron clave para observar los efectos de la concurrencia en tiempo real.
 </p>
 
 <p align="justify">
@@ -73,7 +73,7 @@ Para el monitoreo, se integró New Relic, instalando los agentes requeridos y co
 Las pruebas se realizaron con Apache JMeter utilizando 30 hilos concurrentes. Inicialmente se estableció un número finito de repeticiones, pero al no alcanzar los resultados esperados, se optó por usar un bucle infinito en los hilos. Cada hilo ejecutaba múltiples transacciones <code>POST</code> que simulaban el envío de 5 unidades monetarias desde la cuenta 1 hacia la cuenta 2. Para que el backend procesara correctamente estas solicitudes, se configuró el encabezado <code>Content-Type: application/json</code>, asegurando que los datos fueran enviados en el formato adecuado. A partir de ahí, se monitoreó manualmente la evolución de los saldos, verificando que las transacciones se ejecutaran correctamente hasta que una cuenta llegara a cero y la otra a 20,000 pesos.
 </p>
 
-<p align="justify"> Cabe resaltar que, entre cada configuración de pruebas, se utilizó Postman para reiniciar los saldos de ambas cuentas a 10,000 pesos, asegurando condiciones iniciales consistentes. Adicionalmente, se realizó una nueva conexión a New Relic antes de cada prueba, de forma que los datos registrados reflejaran únicamente la ejecución correspondiente a la configuración evaluada. </p>
+<p align="justify"> Cabe resaltar que, entre cada configuración de pruebas, se utilizó Postman para reiniciar el saldo inicial de ambas cuentas, manteniendo condiciones consistentes en 10,000 pesos. Adicionalmente, se realizó una nueva conexión a New Relic antes de cada prueba, de forma que los datos registrados reflejaran únicamente la ejecución correspondiente a la configuración evaluada. </p>
 
 <p align="justify">
 Para el análisis de rendimiento, se evaluaron cuatro configuraciones del pool de conexiones: básica, intermedia, agresiva y muy agresiva. Todas compartían los mismos valores de idleTimeout (30,000 ms), maxLifetime (1,800,000 ms) y connectionTimeout (30,000 ms), parámetros que se mantuvieron constantes para que las diferencias observadas se debieran únicamente a la variación en el tamaño del pool.
