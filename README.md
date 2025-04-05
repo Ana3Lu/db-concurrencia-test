@@ -23,7 +23,11 @@
 
 ## 1. Introducción
 
+En el presente proyecto se desarrolló una aplicación que simula un sistema bancario básico, que busca analizar cómo responde frente a múltiples operaciones realizadas al mismo tiempo. Específicamente, se probó qué tanto afecta el tamaño del “pool de conexiones” -el número de conexiones que puede manejar el sistema entre la aplicación y la base de datos— al desempeño de la aplicación.
 
+Para esto, se diseñó una API en Java usando Spring Boot, conectada a una base de datos MySQL. Luego, se implementaron funcionalidades como la creación de cuentas, el movimiento de dinero entre ellas y el registro de transacciones. A estas operaciones se les aplicaron mecanismos para manejar conflictos cuando varias operaciones intentan modificar los mismos datos al mismo tiempo.
+
+Con el fin de medir el comportamiento del sistema bajo carga, se utilizaron herramientas como Apache JMeter para simular múltiples usuarios haciendo transacciones a la vez, y New Relic para monitorear el desempeño de la aplicación y la base de datos. Se probaron distintas configuraciones del pool de conexiones para comparar los resultados y entender cuál es la más eficiente.
 
 ---
 
@@ -68,15 +72,14 @@ En cada gráfica se puede observar que las áreas coloreadas representan el tiem
 
 *Figura 1. Visualización del tiempo de transacción web obtenida desde New Relic con una configuración básica de HikariCP, con un maximumPoolSize de 5 y un minimumIdle de 2.*
 
-En este caso, se observaron tiempos elevados del lado de la aplicación Java en comparación con la base de datos. Esta configuración limitada permitió identificar claramente un cuello de botella en el backend, lo que provocó un predominio del consumo de recursos por parte de Java frente a MySQL.
-
+En esta gráfica se ve que la mayoría del tiempo lo consume la aplicación en Java. Esto indica que hay muchas operaciones esperando una conexión disponible, lo que genera un cuello de botella en el backend. El sistema no es capaz de atender bien a los 30 usuarios simultáneos.
 ### Pool con Configuración Intermedia
 
 ![Diagrama Tiempo de Transacción Web con un Pool de Tamaño Máximo 20](Diagramas/20maxPool.png)
 
 *Figura 2. Visualización del tiempo de transacción web obtenida desde New Relic con una configuración intermedia de HikariCP, con un maximumPoolSize de 20 y un minimumIdle de 5.*
 
-En esta prueba se evidenció una mejora significativa en los tiempos del backend Java. Aunque la base de datos comenzó a asumir una proporción mayor del tiempo de respuesta, Java continuó siendo el componente más exigido, aunque en menor medida que en la configuración básica.
+En esta prueba se evidencia una mejora significativa en los tiempos del backend. Aunque la base de datos comenzó a asumir una proporción mayor del tiempo de respuesta, Java continuó siendo el componente más exigido, aunque en menor medida que en la configuración básica.
 
 
 ### Pool con Configuración Agresiva
@@ -85,7 +88,7 @@ En esta prueba se evidenció una mejora significativa en los tiempos del backend
 
 *Figura 3. Visualización del tiempo de transacción web obtenida desde New Relic con una configuración agresiva de HikariCP, estableciendo un maximumPoolSize de 50 y un minimumIdle de 20.*
 
-Se observó una reducción considerable en los tiempos del backend, y un incremento progresivo en el peso relativo de la base de datos en el tiempo total de transacción. Si bien la carga se distribuyó mejor, Java seguía teniendo un rol predominante, lo cual motivó la necesidad de evaluar una configuración aún más exigente.
+En este caso se observó una reducción considerable en los tiempos del backend, y un incremento progresivo en el peso relativo de la base de datos en el tiempo total de transacción. Si bien la carga se distribuyó mejor, Java seguía teniendo un rol predominante, lo cual motivó la necesidad de evaluar una configuración aún más exigente.
 
 
 ### Pool con Configuración Muy Agresiva
@@ -94,16 +97,29 @@ Se observó una reducción considerable en los tiempos del backend, y un increme
 
 *Figura 4. Visualización del tiempo de transacción web obtenida desde New Relic bajo una configuración muy agresiva de HikariCP, con un maximumPoolSize de 80 y un minimumIdle de 40.*
 
-Esta configuración se probó con el objetivo de observar si el aumento de conexiones permitía una distribución más balanceada de la carga entre el backend y la base de datos. A diferencia de las pruebas anteriores, se buscó identificar un punto donde MySQL empezara a tener un rol más dominante, reduciendo la presión sobre Java.
+En este caso, la aplicación tiene suficientes conexiones para atender a todos los usuarios sin demoras. Sin embargo, se observa que el tiempo de respuesta total ya no mejora mucho con respecto a la configuración anterior. Incluso, puede notarse que se empieza a desperdiciar recursos, porque se asignan más conexiones de las necesarias. A diferencia de las pruebas anteriores, se buscó identificar un punto donde MySQL empezara a tener un rol más dominante, reduciendo la presión sobre Java.
 
+
+Con base en las comparaciones anteriormente expuestas, se puede concluir que aumentar el número de conexiones disponibles mejora el desempeño hasta cierto punto. Sin embargo, después de un nivel intermedio, los beneficios adicionales son mínimos y pueden generar un consumo innecesario de recursos. Por eso, encontrar una configuración equilibrada (como la intermedia o agresiva) es lo más recomendable para un sistema como este.
 ---
 
 ## 4. Conclusión
 
+Gracias a esta práctica se pudo observar cómo el número de conexiones disponibles entre una aplicación y su base de datos influye directamente en la eficiencia del sistema. Al aumentar el tamaño del pool de conexiones, el sistema puede responder más rápido a múltiples usuarios que hacen operaciones al mismo tiempo. Sin embargo, también se comprobó que hacer este aumento de forma exagerada no siempre mejora el desempeño, y en algunos casos puede llevar a desperdiciar recursos.
+
+Además, el uso de estrategias para manejar conflictos cuando varias operaciones intentan modificar los mismos datos permitió que las transacciones fueran confiables y no se presentaran errores por concurrencia. El monitoreo con herramientas como New Relic fue clave para visualizar los tiempos de respuesta y entender cómo se comportaba el sistema bajo diferentes configuraciones.
+
+En resumen, esta práctica permitió aplicar conceptos importantes sobre concurrencia, rendimiento y monitoreo de aplicaciones en un escenario realista, fortaleciendo las habilidades necesarias para diseñar sistemas eficientes y escalables.
 
 
 ---
 
 ## 5. Referencias
 
+Spring. (n.d.). Spring Framework Documentation. https://docs.spring.io/spring-framework/
 
+New Relic. (n.d.). New Relic Documentation. https://docs.newrelic.com/
+
+HikariCP. (n.d.). HikariCP: A solid, high-performance JDBC connection pool. https://github.com/brettwooldridge/HikariCP
+
+Oracle. (n.d.). Java Platform, Standard Edition 17 Documentation. https://docs.oracle.com/en/java/javase/17/
