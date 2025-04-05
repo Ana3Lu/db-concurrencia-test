@@ -34,7 +34,7 @@ This project analyzes the behavior of a Spring Boot REST API under concurrent lo
 
 El propósito principal de este proyecto fue analizar cómo se comporta una aplicación cuando muchos usuarios realizan operaciones simultáneamente. Para ello, se diseñó una simulación bancaria donde dos cuentas pueden enviarse dinero entre sí. Aunque la lógica del sistema era sencilla, el énfasis estuvo en observar cómo respondía bajo presión, especialmente al modificar la cantidad de conexiones activas entre la aplicación y la base de datos.
 
-Se utilizó Java con Spring Boot para desarrollar la aplicación, y una base de datos en la nube para almacenar la información [1]. Además, se implementaron mecanismos como el control de concurrencia optimista y los reintentos automáticos, permitiendo manejar situaciones donde varias transacciones intentan modificar los mismos datos al mismo tiempo, gracias a funcionalidades del framework JPA y la anotación @Retryable [1].
+Se utilizó Java con Spring Boot para desarrollar la aplicación, y una base de datos en la nube para almacenar la información [1]. Además, se implementaron mecanismos como el control de concurrencia optimista y los reintentos automáticos, permitiendo manejar situaciones donde varias transacciones intentan modificar los mismos datos al mismo tiempo, gracias a funcionalidades del framework JPA y la anotación <code>@Retryable</code> [1].
 
 El desempeño del sistema se midió usando dos herramientas: Apache JMeter, que simula múltiples usuarios ejecutando transacciones de forma concurrente, y New Relic, que permite monitorear en tiempo real el tiempo de respuesta de cada parte del sistema [2]. Con esto, se probaron distintas configuraciones del número de conexiones disponibles, desde muy pocas hasta muchas, para identificar cuál ofrecía el mejor rendimiento en un entorno de alta concurrencia.
 
@@ -51,7 +51,7 @@ Para ello, se generó un proyecto base utilizando Spring Initializr, en el cual 
 </p>
 
 <p align="justify">
-Dicho manejo se complementó con la anotación @Retryable, configurado para reintentar hasta tres veces con pausas de 100 ms. Además, se usó @Transactional para asegurar la atomicidad del proceso de transferencia de fondos, evitando enfoques más restrictivos como synchronized.
+Dicho manejo se complementó con la anotación <code>@Retryable</code>, configurado para reintentar hasta tres veces con pausas de 100 ms. Además, se usó <code>@Transactional</code> para asegurar la atomicidad del proceso de transferencia de fondos, evitando enfoques más restrictivos como <code>synchronized</code>.
 </p>
 
 <p align="justify">
@@ -150,7 +150,7 @@ Este proyecto permitió entender y observar cómo el número de conexiones dispo
 </p>
 
 <p align="justify">
-También se implementaron estrategias para manejar posibles conflictos cuando varias operaciones intentaban modificar los mismos datos, lo cual evitó errores y garantizó que cada transacción fuera segura. Estas decisiones ayudaron a construir una solución confiable para ambientes concurrentes, gracias a la lógica implementada en el servicio con anotaciones como @Transactional, @Retryable, y el uso de un campo adicional que permitió controlar la concurrencia sin necesidad de sincronización explícita.
+También se implementaron estrategias para manejar posibles conflictos cuando varias operaciones intentaban modificar los mismos datos, lo cual evitó errores y garantizó que cada transacción fuera segura. Estas decisiones ayudaron a construir una solución confiable para ambientes concurrentes, gracias a la lógica implementada en el servicio con anotaciones como <code>@Transactional</code>, <code>@Retryable</code>, y el uso de un campo adicional que permitió controlar la concurrencia sin necesidad de sincronización explícita.
 </p>
 
 <p align="justify">
