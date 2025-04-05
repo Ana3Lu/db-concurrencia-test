@@ -120,7 +120,7 @@ En esta prueba se evidencia una mejora significativa en los tiempos del backend.
 *Figura 3. Visualización del tiempo de transacción web obtenida desde New Relic con una configuración agresiva de HikariCP, estableciendo un maximumPoolSize de 50 y un minimumIdle de 20.*
 
 <p align="justify">
-En este caso se observó una reducción considerable en los tiempos del backend, y un incremento progresivo en el peso relativo de la base de datos en el tiempo total de transacción. Si bien la carga se distribuyó mejor, Java seguía teniendo un rol predominante, lo cual motivó la necesidad de evaluar una configuración aún más exigente.
+En este caso se observó una reducción considerable en los tiempos del backend, y un incremento progresivo en el peso relativo de la base de datos en el tiempo total de transacción. Aunque la carga comenzaba a repartirse de forma más equilibrada entre los componentes, Java seguía teniendo una ligera predominancia. Aun siendo esta la configuración con mejor desempeño hasta el momento, se consideró relevante evaluar un escenario aún más exigente, para observar si una mayor cantidad de conexiones podría finalmente desplazar el cuello de botella hacia la base de datos y así optimizar aún más el rendimiento general.
 </p>
 
 ### Pool con Configuración Muy Agresiva
@@ -130,11 +130,11 @@ En este caso se observó una reducción considerable en los tiempos del backend,
 *Figura 4. Visualización del tiempo de transacción web obtenida desde New Relic bajo una configuración muy agresiva de HikariCP, con un maximumPoolSize de 80 y un minimumIdle de 40.*
 
 <p align="justify">
-En este caso, la aplicación tiene suficientes conexiones para atender a todos los usuarios sin demoras. Sin embargo, se observa que el tiempo de respuesta total ya no mejora mucho con respecto a la configuración anterior. Incluso, puede notarse que se empieza a desperdiciar recursos, porque se asignan más conexiones de las necesarias. A diferencia de las pruebas anteriores, se buscó identificar un punto donde MySQL empezara a tener un rol más dominante, reduciendo la presión sobre Java.
+En este escenario, la aplicación dispone de suficientes conexiones para atender a todos los usuarios sin demoras visibles. No obstante, el tiempo de respuesta total deja de mejorar significativamente en comparación con la configuración anterior. Incluso se evidencia un uso innecesario de recursos, ya que se asignan más conexiones de las realmente requeridas. A diferencia de las pruebas previas, el objetivo aquí fue explorar si un mayor número de conexiones podía trasladar el cuello de botella hacia la base de datos, aliviando así la presión sobre Java. 
 </p>
 
 <p align="justify">
-Con base en las comparaciones anteriormente expuestas, se puede concluir que aumentar el número de conexiones disponibles mejora el desempeño hasta cierto punto. Sin embargo, después de un nivel intermedio, los beneficios adicionales son mínimos y pueden generar un consumo innecesario de recursos. Por eso, encontrar una configuración equilibrada (como la intermedia o agresiva) resulta lo más recomendable para un sistema de este tipo, que busca eficiencia sin sobrecargar el entorno. Curiosamente, en este caso particular fue la configuración agresiva la que mostró mejores tiempos de respuesta, lo cual podría deberse a que la base de datos estaba alojada en Railway, una plataforma que puede llegar a manejar de forma eficiente múltiples conexiones activas y permite un mayor nivel de concurrencia sin degradar el servicio.
+Con base en las comparaciones realizadas, se puede concluir que aumentar el número de conexiones disponibles mejora el desempeño hasta cierto punto. Sin embargo, más allá de un nivel intermedio, los beneficios se vuelven marginales y pueden implicar un desperdicio de recursos. Por ello, resulta más recomendable optar por una configuración equilibrada (como la intermedia o la agresiva), que favorezca la eficiencia sin sobrecargar el entorno. Curiosamente, en este caso particular, fue la configuración agresiva la que arrojó los mejores tiempos de respuesta, posiblemente debido a que la base de datos estaba alojada en Railway, una plataforma capaz de manejar eficientemente múltiples conexiones activas y de sostener un alto nivel de concurrencia sin degradación del servicio. 
 </p> 
 
 <p align="justify">
