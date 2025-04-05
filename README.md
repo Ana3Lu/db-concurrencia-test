@@ -23,11 +23,11 @@
 
 ## 1. Introducción
 
-En el presente proyecto se desarrolló una aplicación que simula un sistema bancario básico, que busca analizar cómo responde frente a múltiples operaciones realizadas al mismo tiempo. Específicamente, se probó qué tanto afecta el tamaño del “pool de conexiones” -el número de conexiones que puede manejar el sistema entre la aplicación y la base de datos— al desempeño de la aplicación.
+El propósito principal de este proyecto fue analizar cómo se comporta una aplicación cuando muchos usuarios realizan operaciones al mismo tiempo. Para ello, se diseñó una simulación bancaria donde dos cuentas pueden enviarse dinero entre sí. Lo interesante del ejercicio fue que, aunque la lógica era sencilla, se realizó un énfasis en entender cómo el sistema respondía bajo presión, especialmente al cambiar la cantidad de conexiones activas entre la aplicación y la base de datos.
 
-Para esto, se diseñó una API en Java usando Spring Boot, conectada a una base de datos MySQL. Luego, se implementaron funcionalidades como la creación de cuentas, el movimiento de dinero entre ellas y el registro de transacciones. A estas operaciones se les aplicaron mecanismos para manejar conflictos cuando varias operaciones intentan modificar los mismos datos al mismo tiempo.
+Se utilizó Java con Spring Boot para desarrollar la aplicación, y una base de datos en la nube para guardar la información [1]. Además, se incluyeron mecanismos como el control de concurrencia optimista y los reintentos automáticos para manejar situaciones en las que dos transacciones intentan modificar los mismos datos simultáneamente, lo cual es posible gracias a funcionalidades del framework JPA y la anotación @Retryable [1].
 
-Con el fin de medir el comportamiento del sistema bajo carga, se utilizaron herramientas como Apache JMeter para simular múltiples usuarios haciendo transacciones a la vez, y New Relic para monitorear el desempeño de la aplicación y la base de datos. Se probaron distintas configuraciones del pool de conexiones para comparar los resultados y entender cuál es la más eficiente.
+El desempeño del sistema se midió usando dos herramientas: Apache JMeter, que simula múltiples usuarios enviando transacciones al mismo tiempo, y New Relic, que permite monitorear en tiempo real qué tanto tarda cada parte del sistema en responder [2]. Con esto se probaron diferentes configuraciones del número de conexiones posibles, desde muy pocas hasta muchas, para identificar cuál es la más eficiente en un escenario de alta concurrencia.
 
 ---
 
@@ -106,19 +106,17 @@ Con base en las comparaciones anteriormente expuestas, se puede concluir que aum
 
 ## 4. Conclusión
 
-Con todo lo anteriormente expuesto, podemos concluir que se pudo observar cómo el número de conexiones disponibles entre una aplicación y su base de datos influye directamente en la eficiencia del sistema. Al aumentar el tamaño del pool de conexiones, el sistema puede responder más rápido a múltiples usuarios que hacen operaciones al mismo tiempo. Sin embargo, también se comprobó que hacer este aumento de forma exagerada no siempre mejora el desempeño, y en algunos casos puede llevar a desperdiciar recursos.
+Este proyecto permitió entender y observar cómo el número de conexiones disponibles entre una aplicación y su base de datos influye directamente en el rendimiento general del sistema de la misma aplicación. Se comprobó que cuando hay pocas conexiones, el sistema se vuelve lento y no puede atender correctamente a muchos usuarios. Por lo que al aumentar ese número se mejoran los tiempos de respuesta y se reducen los bloqueos, aunque solo hasta cierto punto.
 
-Además de esto, el uso de estrategias para manejar conflictos cuando varias operaciones intentan modificar los mismos datos permitió que las transacciones fueran confiables y no se presentaran errores por concurrencia. El monitoreo con New Relic fue bastante importante para visualizar los tiempos de respuesta y entender cómo se comportaba el sistema utilizando diferentes configuraciones.
+También se implementaron estrategias para manejar posibles conflictos cuando varias operaciones intentaban modificar los mismos datos, lo cual evitó errores y garantizó que cada transacción fuera segura. Estas decisiones ayudaron a construir una solución confiable para ambientes concurrentes.
+
+Finalmente, el uso de herramientas de monitoreo y pruebas permitió identificar de manera visual y precisa cómo responde el sistema ante diferentes niveles de carga, donde se realizan ciertas comparaciones en cuanto a las gráficas de los tiempos de los tamaños de los Pool, lo que ayuda a ver de una mejor manera el comportamiento de la aplicación cuando existen diferentes niveles de concurrencia.
 
 
 ---
 
 ## 5. Referencias
 
-Spring. (n.d.). Spring Framework Documentation. https://docs.spring.io/spring-framework/
+[1] Spring, “Spring Framework Documentation.” [Online]. Available: https://docs.spring.io/spring-framework/
 
-New Relic. (n.d.). New Relic Documentation. https://docs.newrelic.com/
-
-HikariCP. (n.d.). HikariCP: A solid, high-performance JDBC connection pool. https://github.com/brettwooldridge/HikariCP
-
-Oracle. (n.d.). Java Platform, Standard Edition 17 Documentation. https://docs.oracle.com/en/java/javase/17/
+[2] New Relic, “New Relic Documentation.” [Online]. Available: https://docs.newrelic.com/
